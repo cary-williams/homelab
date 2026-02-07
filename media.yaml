@@ -1,0 +1,111 @@
+# 6101 - 6108
+services:
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - BUFFER_SIZE=31457280
+    volumes:
+      - /srv/config/sabnzb/config:/config
+      - /mnt/nas/media/downloads:/downloads
+      - /mnt/nas/media/incomplete-downloads:/incomplete-downloads
+    ports:
+      - 6101:8080
+      - 6102:9090
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1g  # Ensure enough memory for high-speed downloads
+          cpus: '2' 
+    
+  prowlarr:
+    image: ghcr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
+    hostname: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    ports:
+      - 6103:9696 #prowlarr
+    volumes:
+      - /srv/config/prowlarr:/config
+    restart: "always" 
+  sonarr:
+    #image: ghcr.io/linuxserver/sonarr
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    hostname: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      #- UMASK=002
+    ports:
+      - 6104:8989 #sonarr
+    volumes:
+      - /srv/config/sonarr:/config
+      - /mnt/nas/media/tv:/media/tv
+      - /mnt/nas/media/downloads:/downloads
+    restart: "always" 
+  radarr:
+    image: ghcr.io/linuxserver/radarr
+    container_name: radarr
+    hostname: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      #- UMASK=002
+    ports:
+      - 6105:7878 
+    volumes:
+      - /srv/config/radarr:/config
+      - /mnt/nas/media/movies:/media/movies
+      - /mnt/nas/media/downloads:/downloads # /mnt/usb_120gb/downloads | /opt/docker/htpc-tools/downloads
+    restart: "always"
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    container_name: overseerr
+    environment:
+      - PUID=1000
+      - GUID=1000
+      - LOG_LEVEL=debug
+      - TZ=America/Chicago
+      #- PORT=5055 #optional
+    ports:
+      - 6106:5055
+    volumes:
+      - /srv/config/overseer:/config
+    restart: unless-stopped
+    
+  readarr:
+    image: ghcr.io/linuxserver/readarr:nightly
+    container_name: readarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - /srv/config/readarr:/config
+      - /mnt/nas/media/books:/books #optional
+      - /mnt/nas/media/downloads:/downloads #optional
+    ports:
+      - 6107:8787
+    restart: unless-stopped
+    
+  homarr:
+    container_name: homarr
+    image: ghcr.io/ajnart/homarr:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock 
+      - /srv/config/homarr:/app/data/configs
+      - /srv/config/homarr/icons:/app/public/icons
+      - /srv/config/homarr/data:/data
+    ports:
+      - 6108:7575

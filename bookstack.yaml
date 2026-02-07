@@ -1,0 +1,58 @@
+  version: '2'
+  services:
+  
+
+    calibre:
+      image: linuxserver/calibre:latest
+      hostname: calibre
+      container_name: calibre
+      environment:
+        - PUID=1000
+        - PGID=997
+        - TZ=America/Chicago
+      volumes:
+        - /srv/config/calibre/:/config/
+        - /data/books/library:/books/
+        - /data/books/downloads/:/upload
+      ports:
+        - "2202:8080"
+        - "2203:8081"
+      restart: unless-stopped
+  
+    calibre_web:
+    # pass norm3
+      image: lscr.io/linuxserver/calibre-web
+      hostname: calibre-web
+      container_name: calibre-web
+      environment:
+        - PUID=1000
+        - GUID=997
+        - TZ=America/Chicago
+        #- DOCKER_MODS=linuxserver/calibre-web:calibre
+        - OAUTHLIB_RELAX_TOKEN_SCOPE=1
+      volumes:
+        - /srv/config/calibre-web/:/config/
+        - /data/books/library/:/books/
+      ports:
+        - "2204:8083"
+      #depends_on: 
+        - calibre
+      restart: unless-stopped
+      
+    openbooks:
+      container_name: OpenBooks
+      environment:
+        - PUID=1000
+        - GUID=997      
+        - BASE_PATH=/
+      volumes:
+          - /srv/config/openbooks:/config/
+          - /data/books/downloads:/books/
+      ports:
+          - "2205:80"
+      restart: unless-stopped
+      command: --persist
+      image: evanbuss/openbooks:latest
+
+
+ 

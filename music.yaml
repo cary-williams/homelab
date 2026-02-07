@@ -1,0 +1,68 @@
+version: '2'
+services:
+  deemix:
+    image: registry.gitlab.com/bockiii/deemix-docker
+    container_name: Deemix
+    volumes:
+      - /data/music/downloads:/downloads
+      - /srv/config/deemix:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - ARL= # Get ARL from deemix site
+      - UMASK_SET=022
+      - DEEZUI=true
+      - REVERSEPROXY=true
+    ports:
+      - 6595:6595
+    restart: unless-stopped
+        
+  navidrome: 
+    container_name: navidrome
+    volumes:
+      - /data/music/library:/music
+      - /srv/config/navidrome:/data
+    ports:
+      - 4533:4533
+    environment:
+      ND_LOGLEVEL: info
+      ND_SCANSCHEDULE: 1h
+      ND_SESSIONTIMEOUT: 24h
+      ND_BASEURL: ""
+    image: deluan/navidrome:latest
+    restart: unless-stopped        
+   
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - /srv/config/jellyfin:/config
+      - /mnt/nas/media/tv:/data/tvshows
+      - /mnt/nas/media/movies:/data/movies
+      - /data/music/library:/data/music
+    ports:
+      - 8096:8096
+      #- 8920:8920 #optional
+      #- 7359:7359/udp #optional
+      #- 1900:1900/udp #optional
+    restart: unless-stopped
+    
+  filebrowser: #For editing, moving and controling music files on a headless LXC.
+    image:  hurlenko/filebrowser:latest
+    container_name: filebrowser
+    ports:
+      - 8090:8080
+    volumes:
+      - /data:/data
+      - /srv/config/filebrowser:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - FB_BASEURL=/filebrowser
+    restart: unless-stopped
+

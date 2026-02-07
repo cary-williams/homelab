@@ -1,0 +1,141 @@
+version: '3.6'
+services:
+
+  uptimekuma:
+    container_name: uptime-kuma
+    image: louislam/uptime-kuma:latest
+    restart: always
+    volumes:
+      - /srv/config/uptime-kuma/:/app/data/
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 3001:3001
+      
+  code-server:
+    image: linuxserver/code-server
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - DEFAULT_WORKSPACE=/config/workspace
+      - PROXY_DOMAIN=
+      - HASHED_PASSWORD=
+    volumes:
+      - /srv/config/codeserver/:/config
+    ports:
+      - 3002:8443
+    restart: unless-stopped
+
+  drawio:
+    image: fjudith/draw.io
+    container_name: drawio
+    restart: unless-stopped
+    ports:
+      - 3003:8080
+      
+  flame:
+    image: pawelmalak/flame:latest
+    container_name: flame
+    volumes:
+      - /srv/config/flame:/app/data
+    ports:
+      - 3004:5005
+    environment:
+       - PASSWORD=
+    restart: unless-stopped
+    
+ 
+  dokuwiki:
+    image: lscr.io/linuxserver/dokuwiki:latest
+    container_name: dokuwiki
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - /srv/config/dokuwiki:/config
+    ports:
+      - 3006:80
+    restart: unless-stopped
+
+  it-tools:
+    container_name: it-tools
+    restart: unless-stopped
+    ports:
+      - 3007:80
+    image: ghcr.io/corentinth/it-tools:latest
+
+  trilium:
+    image: zadam/trilium
+    container_name: trilium
+    security_opt:
+      - no-new-privileges:false
+    environment: 
+      - TZ=America/Chicago
+      - TRILIUM_DATA_DIR=/home/node/trilium-data
+    volumes:
+      - /srv/config/trilium:/home/node/trilium-data
+
+    ports:
+      - 3008:8080
+    restart: always
+      
+  podgrab:
+    image: akhilrex/podgrab
+    container_name: podgrab
+    environment:
+      - CHECK_FREQUENCY=240
+      - PASSWORD= ## Uncomment to enable basic authentication, username = podgrab
+    volumes:
+      - /srv/config/podgrab:/config
+      - /data/podgrab:/assets
+    ports:
+      - 3009:8080
+    restart: unless-stopped
+    
+  goaccess:
+    # ndash
+    image: 'xavierh/goaccess-for-nginxproxymanager:latest'
+    container_name: ndash
+    restart: always
+    ports:
+        - 3010:7880
+    environment:
+        - TZ=America/Chicago         
+        - SKIP_ARCHIVED_LOGS=False #optional
+        - DEBUG=False #optional
+        - EXCLUDE_IPS=127.0.0.1 #optional - comma delimited 
+        - LOG_TYPE=NPM #optional - more information below
+    volumes:
+      - /srv/config/nginxproxymanager/logs:/opt/log
+      #- /path/to/host/custom:/opt/custom #optional, required if using log_type = CUSTOM
+  
+  inventory:
+    image: ghcr.io/hay-kot/homebox:latest
+    container_name: inventory
+    restart: always
+    environment:
+    - HBOX_LOG_LEVEL=info
+    - HBOX_LOG_FORMAT=text
+    - HBOX_WEB_MAX_UPLOAD_SIZE=10
+    - HBOX_OPTIONS_ALLOW_REGISTRATION=false
+    volumes:
+      - /srv/config/inventory/data:/data/
+    ports:
+      - 3012:7745
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: unless-stopped
+    ports:
+      - 3005:3000
+    environment:
+      MC_DB_FILE: /metabase-data/metabase.db
+    volumes:
+      - /srv/config/metabase:/metabase-data
+      
+      
+   
+    

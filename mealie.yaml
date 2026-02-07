@@ -1,0 +1,56 @@
+---
+version: "3.7"
+services:
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:latest
+    container_name: meals
+    ports:
+        - "7001:9000" # 
+    deploy:
+      resources:
+        limits:
+          memory: 1000M # 
+    depends_on:
+      - postgres
+    volumes:
+      - /srv/config/mealie-data:/app/data/
+    environment:
+    # Set Backend ENV Variables Here
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_FROM_NAME: Mealie
+      SMTP_AUTH_STRATEGY: TLS # Options: TLS, SSL, NONE
+      SMTP_FROM_EMAIL: user@gmail.com
+      SMTP_USER: user@gmail.com
+      SMTP_PASSWORD: #use gmail app password
+      ALLOW_SIGNUP: true
+      PUID: 1000
+      PGID: 1000
+      TZ: America/Chicago
+      MAX_WORKERS: 1
+      WEB_CONCURRENCY: 1
+      BASE_URL: #set your base url https://recipes.somedomain.com
+
+    # Database Settings
+      DB_ENGINE: postgres
+      POSTGRES_USER: mealie
+      POSTGRES_PASSWORD: 
+      POSTGRES_SERVER: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: mealie
+    restart: always
+  postgres:
+    container_name: mealie-postgres
+    image: postgres:16
+    restart: always
+    volumes:
+      - /srv/config/mealie-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 
+      POSTGRES_USER: mealie
+
+volumes:
+  mealie-data:
+    driver: local
+  mealie-pgdata:
+    driver: local
