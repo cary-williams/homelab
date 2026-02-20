@@ -1,4 +1,3 @@
-version: '2'
 services:
   deemix:
     image: registry.gitlab.com/bockiii/deemix-docker
